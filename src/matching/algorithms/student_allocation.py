@@ -117,7 +117,10 @@ def student_optimal(students, projects):
                 for project in supervisor_projects:
                     _delete_pair(project, successor)
                 if not successor.prefs:
-                    free_students.remove(successor)
+                    try:
+                        free_students.remove(successor)
+                    except ValueError:
+                        pass
 
     return {p: p.matching for p in projects}
 
