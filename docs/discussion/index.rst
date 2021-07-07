@@ -15,3 +15,4 @@ libraries.
    student_allocation/index.rst
    stable_roommates/index.rst
    other_packages.rst
+   structure.rst
