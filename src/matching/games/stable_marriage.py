@@ -1,4 +1,5 @@
-""" The SM game class and supporting functions. """
+"""The SM game class and supporting functions."""
+
 import copy
 
 from matching import BaseGame, Player, SingleMatching
@@ -7,7 +8,7 @@ from matching.exceptions import MatchingError
 
 
 class StableMarriage(BaseGame):
-    """A class for solving instances of the stable marriage problem (SM).
+    """Solver for the stable marriage problem (SM).
 
     Parameters
     ----------
@@ -15,22 +16,21 @@ class StableMarriage(BaseGame):
         The suitors in the game. Each suitor must rank all elements in
         ``reviewers``.
     reviewers : list of Player
-        The reviewers in the game. Each reviewer must rank all elements in
-        ``suitors``.
+        The reviewers in the game. Each reviewer must rank all elements
+        in ``suitors``.
 
     Attributes
     ----------
-    matching : Matching or None
-        Once the game is solved, a matching is available. This uses the suitors
-        and reviewers as keys and values, respectively, in a ``Matching``
-        object. Initialises as `None`.
+    matching : SingleMatching or None
+        Once the game is solved, a matching is available. This uses the
+        suitors and reviewers as keys and values, respectively, in a
+        ``SingleMatching`` object. Initialises as ``None``.
     blocking_pairs : list of (Player, Player)
-        The suitor-reviewer pairs that both prefer one another to their current
-        match. Initialises as ``None``.
+        The suitor-reviewer pairs that both prefer one another to their
+        current match. Initialises as ``None``.
     """
 
     def __init__(self, suitors, reviewers):
-
         suitors, reviewers = copy.deepcopy([suitors, reviewers])
         self.suitors = suitors
         self.reviewers = reviewers
@@ -40,7 +40,7 @@ class StableMarriage(BaseGame):
 
     @classmethod
     def create_from_dictionaries(cls, suitor_prefs, reviewer_prefs):
-        """ Create an instance of SM from two preference dictionaries. """
+        """Create an instance of SM from two preference dictionaries."""
 
         suitors, reviewers = _make_players(suitor_prefs, reviewer_prefs)
         game = cls(suitors, reviewers)
@@ -48,8 +48,11 @@ class StableMarriage(BaseGame):
         return game
 
     def solve(self, optimal="suitor"):
-        """Solve the instance of SM using either the suitor- or
-        reviewer-oriented Gale-Shapley algorithm. Return the matching."""
+        """Solve the instance of SM. Return the matching.
+
+        The party optimality can be controlled using the ``optimal``
+        parameter.
+        """
 
         self.matching = SingleMatching(
             stable_marriage(self.suitors, self.reviewers, optimal)
@@ -57,7 +60,7 @@ class StableMarriage(BaseGame):
         return self.matching
 
     def check_validity(self):
-        """ Check whether the current matching is valid. """
+        """Check whether the current matching is valid."""
 
         unmatched_issues = self._check_for_unmatched_players()
         not_in_matching_issues = self._check_for_players_not_in_matching()
@@ -73,8 +76,7 @@ class StableMarriage(BaseGame):
         return True
 
     def check_stability(self):
-        """Check for the existence of any blocking pairs in the current
-        matching, thus determining the stability of the matching."""
+        """Check for the existence of any blocking pairs."""
 
         blocking_pairs = []
         for suitor in self.suitors:
@@ -88,7 +90,7 @@ class StableMarriage(BaseGame):
         return not any(blocking_pairs)
 
     def _check_for_unmatched_players(self):
-        """ Check everyone has a match. """
+        """Check everyone has a match."""
 
         issues = []
         for player in self.suitors + self.reviewers:
@@ -99,7 +101,7 @@ class StableMarriage(BaseGame):
         return issues
 
     def _check_for_players_not_in_matching(self):
-        """ Check that everyone appears in the matching. """
+        """Check that everyone appears in the matching."""
 
         players_in_matching = set(self.matching.keys()) | set(
             self.matching.values()
@@ -113,8 +115,7 @@ class StableMarriage(BaseGame):
         return issues
 
     def _check_for_inconsistent_matches(self):
-        """Check that the game matching is consistent with those of the
-        players."""
+        """Check the matching is consistent with the players'."""
 
         issues = []
         for suitor, reviewer in self.matching.items():
@@ -127,8 +128,7 @@ class StableMarriage(BaseGame):
         return issues
 
     def check_inputs(self):
-        """Raise an error if any of the conditions of the game have been
-        broken."""
+        """Raise an error if any of the game's rules do not hold."""
 
         self._check_num_players()
         for suitor in self.suitors:
@@ -137,7 +137,7 @@ class StableMarriage(BaseGame):
             self._check_player_ranks(reviewer)
 
     def _check_num_players(self):
-        """ Check that the number of suitors and reviewers are equal. """
+        """Check that the number of suitors and reviewers are equal."""
 
         if len(self.suitors) != len(self.reviewers):
             raise ValueError(
@@ -147,7 +147,7 @@ class StableMarriage(BaseGame):
         return True
 
     def _check_player_ranks(self, player):
-        """ Check that a player has ranked all of the other group. """
+        """Check that a player has ranked all of the other group."""
 
         others = self.reviewers if player in self.suitors else self.suitors
         if set(player.prefs) != set(others):
@@ -160,8 +160,7 @@ class StableMarriage(BaseGame):
 
 
 def _make_players(suitor_prefs, reviewer_prefs):
-    """Make a set of ``Player`` instances each for suitors and reviewers from
-    the dictionaries given. Add their preferences."""
+    """Make a set of suitors and reviewers from two dictionaries."""
 
     suitor_dict, reviewer_dict = _make_instances(suitor_prefs, reviewer_prefs)
 
@@ -180,7 +179,7 @@ def _make_players(suitor_prefs, reviewer_prefs):
 
 
 def _make_instances(suitor_prefs, reviewer_prefs):
-    """ Create ``Player`` instances for the names in each dictionary. """
+    """Create ``Player`` instances for the names in each dictionary."""
 
     suitor_dict, reviewer_dict = {}, {}
     for suitor_name in suitor_prefs:
